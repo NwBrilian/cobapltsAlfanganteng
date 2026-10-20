@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -493,30 +493,32 @@
 
         // Export table to CSV
         function exportToExcel() {
-            if (state.history.length === 0) {
-                alert("Belum ada data untuk diekspor!");
-                return;
-            }
+  // 1. Buat header kolom
+  const dataArray = [
+    ["Waktu", "Tegangan (V)", "Arus (A)", "Daya (W)", "Baterai (%)", "Sumber", "Mode"]
+  ];
 
-            let csvContent = "data:text/csv;charset=utf-8,";
-            // Header
-            csvContent += "Waktu,Tegangan (V),Arus (A),Daya (W),Baterai (%),Sumber,Mode\n";
-            
-            // Data
-            state.history.forEach(row => {
-                const rowStr = `${row.waktu},${row.tegangan},${row.arus},${row.daya},${row.baterai},${row.sumber},${row.mode}`;
-                csvContent += rowStr + "\n";
-            });
+  // 2. Masukkan data log (sesuaikan 'logs' dengan variabel array log milikmu)
+  logs.forEach(item => {
+    dataArray.push([
+      item.waktu,
+      item.tegangan,
+      item.arus,
+      item.daya,
+      item.baterai,
+      item.sumber,
+      item.mode
+    ]);
+  });
 
-            // Trigger download
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Data_Logger_PLTS_${new Date().getTime()}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+  // 3. Konversi array ke worksheet Excel
+  const worksheet = XLSX.utils.aoa_to_sheet(dataArray);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Data Log PLTS");
+
+  // 4. Unduh file .xlsx
+  XLSX.writeFile(workbook, `Data_Logger_PLTS_${Date.now()}.xlsx`);
+}
 
         // Initialize App
         window.onload = () => {
