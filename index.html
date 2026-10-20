@@ -6,8 +6,9 @@
     <title>Dashboard Smart Load Management</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <script>
         tailwind.config = {
             theme: {
@@ -236,6 +237,7 @@
 
     <!-- Application Logic (JavaScript) -->
     <script>
+        let logs = [];
         // State Application
         const state = {
             mode: 'auto', // 'auto' | 'manual'
@@ -491,34 +493,40 @@
             });
         }
 
-        // Export table to CSV
+        // Export table to Excel
         function exportToExcel() {
-  // 1. Buat header kolom
-  const dataArray = [
-    ["Waktu", "Tegangan (V)", "Arus (A)", "Daya (W)", "Baterai (%)", "Sumber", "Mode"]
-  ];
+            // 1. Cek apakah ada data di state.history
+            if (!state.history || state.history.length === 0) {
+                alert("Data log masih kosong!");
+                return;
+            }
 
-  // 2. Masukkan data log (sesuaikan 'logs' dengan variabel array log milikmu)
-  logs.forEach(item => {
-    dataArray.push([
-      item.waktu,
-      item.tegangan,
-      item.arus,
-      item.daya,
-      item.baterai,
-      item.sumber,
-      item.mode
-    ]);
-  });
+            // 2. Buat header kolom
+            const dataArray = [
+                ["Waktu", "Tegangan (V)", "Arus (A)", "Daya (W)", "Baterai (%)", "Sumber", "Mode"]
+            ];
 
-  // 3. Konversi array ke worksheet Excel
-  const worksheet = XLSX.utils.aoa_to_sheet(dataArray);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Data Log PLTS");
+            // 3. Masukkan data dari state.history (bukan 'logs')
+            state.history.forEach(item => {
+                dataArray.push([
+                    item.waktu,
+                    item.tegangan,
+                    item.arus,
+                    item.daya,
+                    item.baterai,
+                    item.sumber,
+                    item.mode
+                ]);
+            });
 
-  // 4. Unduh file .xlsx
-  XLSX.writeFile(workbook, `Data_Logger_PLTS_${Date.now()}.xlsx`);
-}
+            // 4. Konversi array ke worksheet Excel
+            const worksheet = XLSX.utils.aoa_to_sheet(dataArray);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Data Log PLTS");
+
+            // 5. Unduh file .xlsx
+            XLSX.writeFile(workbook, `Data_Logger_PLTS_${Date.now()}.xlsx`);
+        }
 
         // Initialize App
         window.onload = () => {
